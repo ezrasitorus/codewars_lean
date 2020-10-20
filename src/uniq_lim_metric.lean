@@ -32,7 +32,12 @@ begin
         exact (irrefl ε') key,
 end
 
-theorem limit_within_bound {X : Type*} [metric_space X] {s : ℕ → X}
+lemma easy {X : Type*} [metric_space X] (a b : X) (R : ℝ) : R - (dist a b) = R - (dist b a) :=
+begin
+    rw dist_comm,
+end
+
+theorem limit_within_closed_bound {X : Type*} [metric_space X] {s : ℕ → X}
     (x : X) (R : ℝ) (h₀ : s ⟶ x) (h₁ : ∀ n m : ℕ, dist (s n) (s m) < R) :
 ∀ n : ℕ, dist (s n) x ≤ R :=
 begin
@@ -51,15 +56,11 @@ begin
             apply dist_triangle,
         calc
         (dist (s n) (s N)) ≥ (dist (s n) x) - (dist (s N) x) : sub_le_iff_le_add.mpr help'
-        ... = (dist (s n) x) - (dist x (s N)) : by sorry
+        ... = (dist (s n) x) - (dist x (s N)) : easy (s N) x (dist (s n) x)
         ... > (dist (s n) x) - (dist (s n) x - R) / 2 : sub_lt_sub_left hN (dist (s n) x)
         ... = (dist (s n) x + R) / 2 : by ring
-        ... > (R + R) / 2 : by sorry
+        ... > (R + R) / 2 : by linarith
         ... = R : half_add_self R,
         exact (lt_asymm (h₁ n N)) key,    
 end
 
-example {X : Type*} [metric_space X] (a b : X) (R : ℝ) : R - (dist a b) = R - (dist b a) :=
-begin
-    rw dist_comm,
-end
