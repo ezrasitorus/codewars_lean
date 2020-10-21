@@ -37,6 +37,11 @@ begin
     rw dist_comm,
 end
 
+lemma easy2 {X : Type*} [metric_space X] (a b : X) (R : ℝ) : (dist a b) + R = (dist b a) + R :=
+begin
+    rw dist_comm,
+end
+
 theorem limit_within_closed_bound {X : Type*} [metric_space X] {s : ℕ → X}
     (x : X) (R : ℝ) (h₀ : s ⟶ x) (h₁ : ∀ n m : ℕ, dist (s n) (s m) < R) :
 ∀ n : ℕ, dist (s n) x ≤ R :=
@@ -64,3 +69,26 @@ begin
         exact (lt_asymm (h₁ n N)) key,    
 end
 
+theorem limit_of_bounded_sequence_in_bound 
+    (s : ℕ → ℝ) 
+    (x B : ℝ)
+    (h_lim : s ⟶ x)
+    (zero : s 0 = 0)
+    (s_bounded : ∀ n : ℕ, dist 0 (s n) < B)
+     : ∃ B', dist 0 x ≤ B' :=
+begin
+    let B' := 2 * B,
+    use B',
+    have help : ∀ n m : ℕ, dist (s n) (s m) < B',
+        intros n m,
+        calc
+        dist (s n) (s m) ≤ dist (s n) 0 + dist 0 (s m) : dist_triangle (s n) 0 (s m)
+        ... = dist 0 (s n) + dist 0 (s m) : easy2 _ _ _
+        ... < B + dist 0 (s m) : add_lt_add_right (s_bounded n) (dist 0 (s m))
+        ... < B + B : (add_lt_add_left (s_bounded m) B)
+        ... = 2 * B : ((two_mul B).symm)
+        ... = B'    : rfl,
+    have overkill : dist (s 0) x ≤ B',
+        exact limit_within_closed_bound x B' h_lim help 0,
+    rwa ← zero,    
+end 
